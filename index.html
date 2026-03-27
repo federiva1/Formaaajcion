@@ -1,8 +1,14 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armá tu formación — AAAJ</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  #app { background: #1a1a2e; padding: 12px; border-radius: 12px; font-family: 'DM Sans', sans-serif; position: relative; }
+  body { background: #111; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 12px; }
+  #app { background: #1a1a2e; padding: 12px; border-radius: 12px; font-family: 'DM Sans', sans-serif; position: relative; width: 100%; max-width: 480px; }
   #header { text-align: center; margin-bottom: 10px; }
   #header h1 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #fff; letter-spacing: 2px; }
   #header p { font-size: 11px; color: #888; margin-top: 2px; }
@@ -28,9 +34,6 @@
   .player-chip { display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 6px 4px; cursor: grab; transition: background 0.15s, opacity 0.15s; min-height: 56px; gap: 3px; }
   .player-chip:active { background: rgba(255,255,255,0.15); }
   .player-chip.used { opacity: 0.25; cursor: default; pointer-events: none; }
-  .avatar-wrap { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: #e53935; border: 1.5px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .avatar-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
-  .avatar-wrap .av-num { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #fff; display: none; }
   .chip-num { font-size: 11px; color: #e53935; font-weight: 500; line-height: 1; }
   .chip-name { font-size: 8px; color: #ccc; text-align: center; line-height: 1.2; word-break: break-word; }
   .player-on-pitch { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: grab; transform: translate(-50%, -50%); z-index: 10; touch-action: none; }
@@ -63,9 +66,6 @@
   #results-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #fff; letter-spacing: 2px; text-align: center; margin-bottom: 4px; }
   .subtitle { font-size: 11px; color: #666; text-align: center; margin-bottom: 14px; }
   .result-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-  .result-avatar-wrap { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; background: #e53935; border: 1.5px solid rgba(255,255,255,0.15); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-  .result-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: none; }
-  .result-avatar-wrap .av-num { font-family: 'Bebas Neue', sans-serif; font-size: 11px; color: #fff; }
   .result-num { font-size: 12px; color: #e53935; font-weight: 500; min-width: 20px; text-align: right; }
   .result-name { font-size: 13px; color: #fff; min-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .result-bar-wrap { flex: 1; background: rgba(255,255,255,0.07); border-radius: 4px; height: 8px; overflow: hidden; }
@@ -75,7 +75,8 @@
   #back-btn { font-family: 'Bebas Neue', sans-serif; font-size: 15px; color: #aaa; background: none; border: 1px solid #333; border-radius: 8px; padding: 8px 20px; cursor: pointer; width: 100%; margin-top: 12px; }
   #total-votes { font-size: 11px; color: #555; text-align: center; margin-bottom: 10px; }
 </style>
-
+</head>
+<body>
 <div id="app">
   <div id="already-screen">
     <h2>¡Ya participaste!</h2>
@@ -138,13 +139,13 @@
   </div>
 </div>
 <div id="toast"></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://igfencxdekvtfspsskwd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZmVuY3hkZWt2dGZzcHNza3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NTUyOTEsImV4cCI6MjA4OTUzMTI5MX0.KVpBNe_p7OLAtZPMFUTpTbKmLCl-G63f53gvFJreinc';
 const LS_KEY = 'aaaj_formacion_enviada';
-const FOTO = id => `https://images.fotmob.com/image_resources/playerimages/${id}.png`;
+// Proxy local para evitar CORS de FotMob
+const FOTO = id => `/api/foto?id=${id}`;
 
 try { if (location.search.includes('reset=1')) { localStorage.removeItem(LS_KEY); location.href = location.pathname; } } catch(e) {}
 
@@ -228,8 +229,6 @@ function makeImg(fid, fallbackNum, size) {
   const wrap = document.createElement('div');
   wrap.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;background:#e53935;display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
   const img = document.createElement('img');
-  // crossOrigin anonymous es clave para html2canvas
-  img.crossOrigin = 'anonymous';
   img.src = FOTO(fid);
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:top center;display:none;';
   const fb = document.createElement('span');
@@ -263,9 +262,7 @@ function removePlayer(num){ const idx=onPitch.findIndex(x=>x.num===num); if(idx=
 function makePitchPlayer(p){
   const el=document.createElement('div'); el.className='player-on-pitch';
   const bubble=document.createElement('div'); bubble.className='player-bubble';
-  const img=document.createElement('img');
-  img.crossOrigin='anonymous';
-  img.src=FOTO(p.fid); img.alt='';
+  const img=document.createElement('img'); img.src=FOTO(p.fid); img.alt='';
   img.style.cssText='width:100%;height:100%;object-fit:cover;object-position:top center;display:none;';
   const fb=document.createElement('div'); fb.className='fallback-num'; fb.textContent=p.num;
   img.onload=()=>{ img.style.display='block'; fb.style.display='none'; };
@@ -350,22 +347,11 @@ document.getElementById('download-btn').addEventListener('click',async()=>{
   document.querySelectorAll('.xbtn').forEach(x=>x.style.display='none');
   try{
     await new Promise(r=>setTimeout(r,200));
-    const canvas=await html2canvas(pitch,{
-      backgroundColor:'#2d7a3a',
-      scale:2,
-      useCORS:true,
-      allowTaint:false,
-      logging:false,
-      width:pitch.offsetWidth,
-      height:pitch.offsetHeight
-    });
+    const canvas=await html2canvas(pitch,{backgroundColor:'#2d7a3a',scale:2,useCORS:true,allowTaint:false,logging:false,width:pitch.offsetWidth,height:pitch.offsetHeight});
     const ctx=canvas.getContext('2d');
-    ctx.fillStyle='rgba(255,255,255,0.4)';
-    ctx.font=`bold ${Math.round(canvas.width*0.04)}px sans-serif`;
-    ctx.textAlign='right';
+    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font=`bold ${Math.round(canvas.width*0.04)}px sans-serif`; ctx.textAlign='right';
     ctx.fillText('Mi formación AAAJ',canvas.width-12,canvas.height-12);
-    const link=document.createElement('a');
-    link.download='mi-formacion-aaaj.png'; link.href=canvas.toDataURL('image/png'); link.click();
+    const link=document.createElement('a'); link.download='mi-formacion-aaaj.png'; link.href=canvas.toDataURL('image/png'); link.click();
     generatingMsg.textContent='¡Descargada! Compartila en Twitter 🔴🤍';
   }catch(e){generatingMsg.textContent='No se pudo generar la imagen.';}
   finally{ successScreen.style.display='flex'; document.querySelectorAll('.xbtn').forEach(x=>x.style.display=''); btn.disabled=false; }
@@ -409,3 +395,5 @@ document.getElementById('back-btn').addEventListener('click',()=>{ resultsScreen
 
 renderGrid(); updateCounter();
 </script>
+</body>
+</html>
