@@ -144,7 +144,6 @@
 const SUPABASE_URL = 'https://igfencxdekvtfspsskwd.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZmVuY3hkZWt2dGZzcHNza3dkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NTUyOTEsImV4cCI6MjA4OTUzMTI5MX0.KVpBNe_p7OLAtZPMFUTpTbKmLCl-G63f53gvFJreinc';
 const LS_KEY = 'aaaj_formacion_enviada';
-// Proxy local para evitar CORS de FotMob
 const FOTO = id => `/api/foto?id=${id}`;
 
 try { if (location.search.includes('reset=1')) { localStorage.removeItem(LS_KEY); location.href = location.pathname; } } catch(e) {}
@@ -215,6 +214,7 @@ ro.observe(pitch); updatePlayerSizes();
 try { if (localStorage.getItem(LS_KEY)) alreadyScreen.style.display='flex'; } catch(e) {}
 
 function showToast(msg) { toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000); }
+
 function updateCounter() {
   const n=onPitch.length;
   document.getElementById('count').textContent=n;
@@ -225,18 +225,20 @@ function updateCounter() {
   wasReady=isReady;
 }
 
-function makeImg(fid, fallbackNum, size) {
+// Crea un avatar circular con foto y fallback al número
+function makeAvatar(fid, num, size) {
   const wrap = document.createElement('div');
   wrap.style.cssText = `width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;background:#e53935;display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
   const img = document.createElement('img');
   img.src = FOTO(fid);
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:top center;display:none;';
   const fb = document.createElement('span');
-  fb.style.cssText = 'font-family:Bebas Neue,sans-serif;color:#fff;font-size:' + Math.round(size*0.38) + 'px;';
-  fb.textContent = fallbackNum;
+  fb.style.cssText = `font-family:'Bebas Neue',sans-serif;color:#fff;font-size:${Math.round(size*0.38)}px;`;
+  fb.textContent = num;
   img.onload = () => { img.style.display='block'; fb.style.display='none'; };
   img.onerror = () => { img.style.display='none'; fb.style.display='block'; };
-  wrap.appendChild(img); wrap.appendChild(fb);
+  wrap.appendChild(img);
+  wrap.appendChild(fb);
   return wrap;
 }
 
@@ -246,7 +248,7 @@ function renderGrid() {
     const used=onPitch.find(x=>x.num===p.num);
     const chip=document.createElement('div');
     chip.className='player-chip'+(used?' used':'');
-    chip.appendChild(makeImg(p.fid, p.num, 32));
+    chip.appendChild(makeAvatar(p.fid, p.num, 32));
     const num=document.createElement('span'); num.className='chip-num'; num.textContent=p.num; chip.appendChild(num);
     const nm=document.createElement('span'); nm.className='chip-name'; nm.textContent=p.name; chip.appendChild(nm);
     if(!used){
@@ -257,7 +259,12 @@ function renderGrid() {
   });
 }
 
-function removePlayer(num){ const idx=onPitch.findIndex(x=>x.num===num); if(idx===-1)return; onPitch[idx].el.remove(); onPitch.splice(idx,1); updateCounter(); renderGrid(); }
+function removePlayer(num){
+  const idx=onPitch.findIndex(x=>x.num===num);
+  if(idx===-1)return;
+  onPitch[idx].el.remove(); onPitch.splice(idx,1);
+  updateCounter(); renderGrid();
+}
 
 function makePitchPlayer(p){
   const el=document.createElement('div'); el.className='player-on-pitch';
@@ -297,6 +304,7 @@ function startPitchDrag(e,el,p){
 }
 
 function isOver(el,cx,cy){ const r=el.getBoundingClientRect(); return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom; }
+
 function handleMove(cx,cy){
   if(activePitchDrag){
     const rect=pitch.getBoundingClientRect();
@@ -308,6 +316,7 @@ function handleMove(cx,cy){
     grid.classList.toggle('drag-over',isOver(grid,cx,cy));
   }
 }
+
 function handleEnd(cx,cy){
   if(activePitchDrag){
     if(isOver(grid,cx,cy))removePlayer(activePitchDrag.p.num);
@@ -315,7 +324,10 @@ function handleEnd(cx,cy){
   } else if(draggingNew){
     if(isOver(pitch,cx,cy)&&onPitch.length<11){
       const rect=pitch.getBoundingClientRect();
-      addToPitch(draggingNew, Math.max(3,Math.min(97,((cx-rect.left)/pitch.clientWidth)*100)), Math.max(3,Math.min(97,((cy-rect.top)/pitch.clientHeight)*100)));
+      addToPitch(draggingNew,
+        Math.max(3,Math.min(97,((cx-rect.left)/pitch.clientWidth)*100)),
+        Math.max(3,Math.min(97,((cy-rect.top)/pitch.clientHeight)*100))
+      );
     }
     draggingNew=null;
   }
@@ -333,7 +345,11 @@ confirmBtn.addEventListener('click',async()=>{
   let jugadores=onPitch.map(p=>({num:p.num,name:p.name,fid:p.fid,x:Math.round(p.xPct),y:Math.round(p.yPct)}));
   if(gk&&gk.yPct<50)jugadores=jugadores.map(p=>({...p,x:Math.round(100-p.x),y:Math.round(100-p.y)}));
   try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/formaciones`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},body:JSON.stringify({jugadores})});
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/formaciones`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
+      body:JSON.stringify({jugadores})
+    });
     if(res.ok||res.status===201){ try{localStorage.setItem(LS_KEY,'1');}catch(e){} successScreen.style.display='flex'; }
     else showToast('Error al guardar. Intentá de nuevo.');
   }catch(e){showToast('Error de conexión.');}
@@ -349,9 +365,12 @@ document.getElementById('download-btn').addEventListener('click',async()=>{
     await new Promise(r=>setTimeout(r,200));
     const canvas=await html2canvas(pitch,{backgroundColor:'#2d7a3a',scale:2,useCORS:true,allowTaint:false,logging:false,width:pitch.offsetWidth,height:pitch.offsetHeight});
     const ctx=canvas.getContext('2d');
-    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font=`bold ${Math.round(canvas.width*0.04)}px sans-serif`; ctx.textAlign='right';
+    ctx.fillStyle='rgba(255,255,255,0.4)';
+    ctx.font=`bold ${Math.round(canvas.width*0.04)}px sans-serif`;
+    ctx.textAlign='right';
     ctx.fillText('Mi formación AAAJ',canvas.width-12,canvas.height-12);
-    const link=document.createElement('a'); link.download='mi-formacion-aaaj.png'; link.href=canvas.toDataURL('image/png'); link.click();
+    const link=document.createElement('a');
+    link.download='mi-formacion-aaaj.png'; link.href=canvas.toDataURL('image/png'); link.click();
     generatingMsg.textContent='¡Descargada! Compartila en Twitter 🔴🤍';
   }catch(e){generatingMsg.textContent='No se pudo generar la imagen.';}
   finally{ successScreen.style.display='flex'; document.querySelectorAll('.xbtn').forEach(x=>x.style.display=''); btn.disabled=false; }
@@ -363,7 +382,9 @@ async function showResults(){
   const totalEl=document.getElementById('total-votes');
   list.innerHTML='<div id="results-loading">Cargando...</div>'; totalEl.textContent='';
   try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/formaciones?select=jugadores`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/formaciones?select=jugadores`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
     const data=await res.json();
     const total=data.length;
     if(total===0){list.innerHTML='<div id="results-loading">Todavía no hay formaciones enviadas.</div>';return;}
@@ -376,12 +397,14 @@ async function showResults(){
     sorted.forEach(p=>{
       const pct=Math.round((p.count/total)*100);
       const barW=Math.round((p.count/max)*100);
+      // Construir fila completamente con DOM — sin innerHTML para preservar onload/onerror
       const row=document.createElement('div'); row.className='result-row';
-      row.appendChild(makeImg(p.fid||0, p.num, 28));
+      row.appendChild(makeAvatar(p.fid||0, p.num, 28));
       const numEl=document.createElement('span'); numEl.className='result-num'; numEl.textContent=p.num; row.appendChild(numEl);
       const nameEl=document.createElement('span'); nameEl.className='result-name'; nameEl.textContent=p.name; row.appendChild(nameEl);
       const barWrap=document.createElement('div'); barWrap.className='result-bar-wrap';
-      const bar=document.createElement('div'); bar.className='result-bar'; bar.style.width='0%'; bar.dataset.w=barW; barWrap.appendChild(bar); row.appendChild(barWrap);
+      const bar=document.createElement('div'); bar.className='result-bar'; bar.style.width='0%'; bar.dataset.w=barW;
+      barWrap.appendChild(bar); row.appendChild(barWrap);
       const pctEl=document.createElement('span'); pctEl.className='result-pct'; pctEl.textContent=pct+'%'; row.appendChild(pctEl);
       list.appendChild(row);
     });
@@ -391,7 +414,10 @@ async function showResults(){
 
 document.getElementById('see-results-btn').addEventListener('click',showResults);
 document.getElementById('already-results-btn').addEventListener('click',showResults);
-document.getElementById('back-btn').addEventListener('click',()=>{ resultsScreen.style.display='none'; try{if(localStorage.getItem(LS_KEY))alreadyScreen.style.display='flex';}catch(e){} });
+document.getElementById('back-btn').addEventListener('click',()=>{
+  resultsScreen.style.display='none';
+  try{if(localStorage.getItem(LS_KEY))alreadyScreen.style.display='flex';}catch(e){}
+});
 
 renderGrid(); updateCounter();
 </script>
