@@ -53,10 +53,6 @@
   #confirm-btn:disabled { cursor: not-allowed; }
   #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; font-size: 13px; padding: 9px 18px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; }
-  #already-screen { display: none; position: absolute; inset: 0; background: #1a1a2e; border-radius: 12px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; z-index: 100; }
-  #already-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #e53935; letter-spacing: 2px; }
-  #already-screen p { font-size: 13px; color: #888; line-height: 1.6; max-width: 220px; }
-  .btn-secondary { font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1px; background: transparent; color: #aaa; border: 1px solid #444; border-radius: 8px; padding: 8px 20px; cursor: pointer; width: 100%; max-width: 220px; margin-top: 4px; }
   #success-screen { display: none; position: absolute; inset: 0; background: rgba(15,15,30,0.97); border-radius: 8px; flex-direction: column; align-items: center; justify-content: center; gap: 10px; z-index: 50; padding: 20px; text-align: center; }
   #success-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 30px; color: #e53935; letter-spacing: 3px; }
   #success-screen p { font-size: 13px; color: #ccc; line-height: 1.6; }
@@ -79,12 +75,6 @@
 </head>
 <body>
 <div id="app">
-  <div id="already-screen">
-    <h2>¡Ya participaste!</h2>
-    <p>Ya enviaste tu formación para esta fecha.<br>¡Gracias, Bicho!</p>
-    <button class="btn-secondary" id="already-results-btn">Ver resultados</button>
-    <p style="color:#555;font-size:11px;margin-top:4px;">Vamos Argentinos ❤️🤍</p>
-  </div>
   <div id="results-screen">
     <h2>⚽ Resultados</h2>
     <div class="subtitle">¿A quién elegiría la gente?</div>
@@ -148,8 +138,9 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // ============================================================
 // CAMBIAR CADA FECHA:
-const RIVAL = 'Aldosivi';           // Nombre del rival
-const LS_KEY = 'aaaj_vs_aldosivi';  // Clave única por fecha (cambiar con el rival)
+const RIVAL = 'Aldosivi';
+const LS_KEY = 'aaaj_vs_aldosivi';
+const LS_FORMATION_KEY = 'aaaj_vs_aldosivi_formacion';
 // ============================================================
 
 const FOTO = id => `/fotos/${id}.png`;
@@ -202,7 +193,6 @@ const pitch = document.getElementById('pitch');
 const grid = document.getElementById('player-grid');
 const confirmBtn = document.getElementById('confirm-btn');
 const successScreen = document.getElementById('success-screen');
-const alreadyScreen = document.getElementById('already-screen');
 const resultsScreen = document.getElementById('results-screen');
 const toast = document.getElementById('toast');
 const generatingMsg = document.getElementById('generating-msg');
@@ -216,8 +206,6 @@ function updatePlayerSizes() {
 }
 const ro = new ResizeObserver(() => updatePlayerSizes());
 ro.observe(pitch); updatePlayerSizes();
-
-try { if (localStorage.getItem(LS_KEY)) alreadyScreen.style.display='flex'; } catch(e) {}
 
 function showToast(msg) { toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3000); }
 
@@ -286,7 +274,7 @@ function makePitchPlayer(p){
   return el;
 }
 
-function addToPitch(p,xPct,yPct){
+function addToPitch(p, xPct, yPct, silent=false){
   if(onPitch.find(x=>x.num===p.num))return;
   const el=makePitchPlayer(p);
   el.style.left=xPct+'%'; el.style.top=yPct+'%';
@@ -294,7 +282,7 @@ function addToPitch(p,xPct,yPct){
   el.addEventListener('mousedown',ev=>{if(!ev.target.classList.contains('xbtn'))startPitchDrag(ev,el,p);});
   pitch.appendChild(el);
   onPitch.push({num:p.num,name:p.name,fid:p.fid,xPct,yPct,el});
-  updateCounter(); renderGrid();
+  if(!silent){ updateCounter(); renderGrid(); }
 }
 
 function startPitchDrag(e,el,p){
@@ -342,6 +330,21 @@ document.addEventListener('mouseup',e=>handleEnd(e.clientX,e.clientY));
 document.addEventListener('touchmove',e=>{ if(activePitchDrag||draggingNew)e.preventDefault(); handleMove(e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
 document.addEventListener('touchend',e=>handleEnd(e.changedTouches[0].clientX,e.changedTouches[0].clientY));
 
+// Restaurar formación guardada si ya participó
+try {
+  const saved = localStorage.getItem(LS_FORMATION_KEY);
+  if (saved && localStorage.getItem(LS_KEY)) {
+    const jugadores = JSON.parse(saved);
+    jugadores.forEach(j => {
+      const p = squad.find(s => s.num === j.num);
+      if (p) addToPitch(p, j.x, j.y, true);
+    });
+    updateCounter(); renderGrid();
+    // Mostrar pantalla de éxito con formación en el fondo
+    successScreen.style.display = 'flex';
+  }
+} catch(e) {}
+
 confirmBtn.addEventListener('click',async()=>{
   if(onPitch.length!==11||sending)return;
   sending=true; confirmBtn.textContent='Enviando...'; confirmBtn.disabled=true;
@@ -354,8 +357,13 @@ confirmBtn.addEventListener('click',async()=>{
       headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
       body:JSON.stringify({jugadores, rival: RIVAL})
     });
-    if(res.ok||res.status===201){ try{localStorage.setItem(LS_KEY,'1');}catch(e){} successScreen.style.display='flex'; }
-    else showToast('Error al guardar. Intentá de nuevo.');
+    if(res.ok||res.status===201){
+      try{
+        localStorage.setItem(LS_KEY,'1');
+        localStorage.setItem(LS_FORMATION_KEY, JSON.stringify(jugadores));
+      }catch(e){}
+      successScreen.style.display='flex';
+    } else showToast('Error al guardar. Intentá de nuevo.');
   }catch(e){showToast('Error de conexión.');}
   finally{sending=false;confirmBtn.textContent='Confirmar formación';confirmBtn.disabled=false;}
 });
@@ -382,7 +390,7 @@ document.getElementById('download-btn').addEventListener('click',async()=>{
 });
 
 async function showResults(){
-  resultsScreen.style.display='flex'; alreadyScreen.style.display='none';
+  resultsScreen.style.display='flex';
   const list=document.getElementById('results-list');
   const totalEl=document.getElementById('total-votes');
   list.innerHTML='<div id="results-loading">Cargando...</div>'; totalEl.textContent='';
@@ -425,10 +433,9 @@ async function showResults(){
 }
 
 document.getElementById('see-results-btn').addEventListener('click',showResults);
-document.getElementById('already-results-btn').addEventListener('click',showResults);
 document.getElementById('back-btn').addEventListener('click',()=>{
   resultsScreen.style.display='none';
-  try{if(localStorage.getItem(LS_KEY))alreadyScreen.style.display='flex';}catch(e){}
+  try{ if(localStorage.getItem(LS_KEY)) successScreen.style.display='flex'; } catch(e){}
 });
 
 renderGrid(); updateCounter();
