@@ -367,17 +367,17 @@ const squad = [
 ].sort((a,b)=>a.num-b.num);
 
 const banfieldSquad = [
-  {num:1,  name:'Sanguinetti', fid:1200037, x:50, y:8},
-  {num:24, name:'López',       fid:1038763, x:18, y:24},
-  {num:27, name:'Abraham',     fid:1254641, x:37, y:24},
-  {num:6,  name:'Meriano',     fid:1299928, x:63, y:24},
-  {num:2,  name:'Arboleda',    fid:857776,  x:82, y:24},
-  {num:10, name:'Gómez',       fid:1645972, x:18, y:44},
-  {num:5,  name:'Villegas',    fid:1246078, x:37, y:44},
-  {num:35, name:'Pais',        fid:1242942, x:63, y:44},
-  {num:40, name:'Zalazar',     fid:1336106, x:82, y:44},
-  {num:17, name:'Perrotta',    fid:1778729, x:35, y:62},
-  {num:16, name:'Méndez',      fid:1054259, x:65, y:62},
+  {num:1,  name:'Sanguinetti', fid:1200037, x:50,    y:8},
+  {num:24, name:'López',       fid:1038763, x:14.66, y:33.39},
+  {num:27, name:'Abraham',     fid:1254641, x:85.21, y:33.98},
+  {num:6,  name:'Meriano',     fid:1299928, x:63,    y:24.39},
+  {num:2,  name:'Arboleda',    fid:857776,  x:37.37, y:24.20},
+  {num:10, name:'Gómez',       fid:1645972, x:85.06, y:64.35},
+  {num:5,  name:'Villegas',    fid:1246078, x:34.85, y:50.46},
+  {num:35, name:'Pais',        fid:1242942, x:63,    y:50.85},
+  {num:40, name:'Zalazar',     fid:1336106, x:14.46, y:63.57},
+  {num:17, name:'Perrotta',    fid:1778729, x:35.72, y:80.40},
+  {num:16, name:'Méndez',      fid:1054259, x:63.81, y:80.79},
 ];
 
 const GOALKEEPERS = [1,12,32,50];
@@ -563,8 +563,6 @@ function toggleRival(){
     banfieldSquad.forEach(p=>{
       const el=makePitchPlayer(p,true);
       el.style.left=p.x+'%'; el.style.top=p.y+'%';
-      el.addEventListener('touchstart',ev=>startPitchDrag(ev,el,p),{passive:false});
-      el.addEventListener('mousedown',ev=>startPitchDrag(ev,el,p));
       pitch.appendChild(el); rivalElements.push(el);
     });
   } else {
