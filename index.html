@@ -367,7 +367,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
     <button class="rival-toggle-btn" id="rival-btn" onclick="toggleRival()">
       <span class="toggle-dot"></span>VER RIVAL (IND. RIVADAVIA)
     </button>
-    <button id="rival-pos-btn" onclick="showRivalPositions()" style="display:none;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;cursor:pointer;">📋</button>
   </div>
   <div id="pitch-row">
     <div id="pitch">
@@ -753,13 +752,10 @@ function addToPitch(p,xPct,yPct,silent=false){
 function toggleRival(){
   rivalVisible=!rivalVisible;
   document.getElementById('rival-btn').classList.toggle('active',rivalVisible);
-  document.getElementById('rival-pos-btn').style.display=rivalVisible?'flex':'none';
   if(rivalVisible){
     banfieldSquad.forEach(p=>{
       const el=makePitchPlayer(p,true);
       el.style.left=p.x+'%'; el.style.top=p.y+'%';
-      el.addEventListener('mousedown',ev=>{ev.preventDefault();startRivalDrag(ev,el,p);});
-      el.addEventListener('touchstart',ev=>startRivalDrag(ev,el,p),{passive:false});
       pitch.appendChild(el); rivalElements.push(el);
     });
   } else {
