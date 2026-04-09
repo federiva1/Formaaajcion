@@ -502,7 +502,6 @@ const FECHAS = [
 
 const FOTO = id => `/fotos/${id}.png`;
 const FOTO_B = id => `/fotosIndependienteRivadavia/${id}.png`;
-const INJURED = [50, 22, 21, 33, 19, 9];
 
 const squad = [
   {num:1,  name:'Mangiaut',    fid:1680187},
@@ -559,6 +558,8 @@ const banfieldSquad = [
 ];
 
 const GOALKEEPERS = [1,12,32,50];
+const INJURED = [50, 22, 21, 19, 9];
+const SUSPENDED = [16];
 let onPitch=[], draggingNew=null, activePitchDrag=null;
 let dragOffX=0, dragOffY=0, sending=false, wasReady=false;
 let rivalVisible=false, rivalElements=[];
@@ -693,13 +694,16 @@ function renderGrid() {
   squad.forEach(p=>{
     const used=onPitch.find(x=>x.num===p.num);
     const isInjured=INJURED.includes(p.num);
+    const isSuspended=SUSPENDED.includes(p.num);
+    const blocked=isInjured||isSuspended;
     const chip=document.createElement('div');
-    chip.className='player-chip'+(used?' used':'')+(isInjured?' injured':'');
+    chip.className='player-chip'+(used?' used':'')+(blocked?' injured':'');
     chip.appendChild(makeAvatar(FOTO(p.fid), p.num, 32));
     const num=document.createElement('span'); num.className='chip-num'; num.textContent=p.num; chip.appendChild(num);
     const nm=document.createElement('span'); nm.className='chip-name'; nm.textContent=p.name; chip.appendChild(nm);
     if(isInjured){ const b=document.createElement('div'); b.className='injury-badge'; b.textContent='🏥'; chip.appendChild(b); }
-    if(!used&&!isInjured){
+    if(isSuspended){ const b=document.createElement('div'); b.className='injury-badge'; b.style.background='#f9a825'; b.textContent='🟨'; chip.appendChild(b); }
+    if(!used&&!blocked){
       chip.addEventListener('touchstart',e=>{e.preventDefault();draggingNew=p;},{passive:false});
       chip.addEventListener('mousedown',e=>{e.preventDefault();draggingNew=p;});
     }
