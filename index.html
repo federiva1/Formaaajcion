@@ -201,6 +201,8 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 .score-btn { width: 26px; height: 26px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #aaa; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
 .score-btn:hover { border-color: var(--rojo); color: #fff; }
 .score-btn.selected { background: var(--rojo); border-color: var(--rojo); color: #fff; }
+.score-btn.skip { color: #555; font-size: 13px; }
+.score-btn.skip.selected { background: #333; border-color: #666; color: #aaa; }
 #scores-confirm-btn { font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 1px; background: var(--rojo); color: #fff; border: none; border-radius: 8px; padding: 12px; cursor: pointer; width: 100%; margin-top: 16px; opacity: 0.3; transition: opacity 0.3s; }
 #scores-confirm-btn.ready { opacity: 1; animation: pulse-btn 1s ease-in-out 3; }
 #scores-success { display: none; position: absolute; inset: 0; background: rgba(15,15,30,0.97); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; z-index: 50; }
@@ -1051,20 +1053,21 @@ function renderScores(){
   if(!playedSquad.length){list.innerHTML='<p style="color:#555;font-size:13px;text-align:center;padding:20px;">El DT aún no cargó los jugadores que jugaron.</p>';return;}
   const titulares=playedSquad.filter(p=>p.tipo==='titular');
   const suplentes=playedSquad.filter(p=>p.tipo==='suplente');
-  function renderGroup(title,players){
+  const dt=playedSquad.filter(p=>p.tipo==='dt');
+  function renderGroup(title,players,showSkip=false){
     if(!players.length)return;
     const t=document.createElement('div'); t.className='scores-section-title'; t.textContent=title; list.appendChild(t);
     players.forEach(p=>{
       const row=document.createElement('div'); row.className='score-player-row'; row.dataset.num=p.num;
       const avWrap=document.createElement('div'); avWrap.className='score-avatar-wrap';
       const img=document.createElement('img'); img.src=FOTO(p.fid);
-      const fb=document.createElement('span'); fb.className='av-fb'; fb.textContent=p.num;
+      const fb=document.createElement('span'); fb.className='av-fb'; fb.textContent=p.tipo==='dt'?'DT':p.num;
       img.onload=()=>{img.style.display='block';fb.style.display='none';};
       img.onerror=()=>{img.style.display='none';fb.style.display='block';};
       img.style.display='none';
       avWrap.appendChild(img); avWrap.appendChild(fb); row.appendChild(avWrap);
       const info=document.createElement('div'); info.className='score-player-info';
-      const numEl=document.createElement('div'); numEl.className='score-player-num'; numEl.textContent=`#${p.num}`;
+      const numEl=document.createElement('div'); numEl.className='score-player-num'; numEl.textContent=p.tipo==='dt'?'DT':`#${p.num}`;
       const nameEl=document.createElement('div'); nameEl.className='score-player-name'; nameEl.textContent=p.name;
       info.appendChild(numEl); info.appendChild(nameEl); row.appendChild(info);
       const btns=document.createElement('div'); btns.className='score-btns';
@@ -1078,11 +1081,23 @@ function renderScores(){
         });
         btns.appendChild(btn);
       }
+      if(showSkip){
+        const skipBtn=document.createElement('button'); skipBtn.className='score-btn skip'; skipBtn.textContent='—';
+        skipBtn.addEventListener('click',()=>{
+          userScores[p.num]=null;
+          btns.querySelectorAll('.score-btn').forEach(b=>b.classList.remove('selected'));
+          skipBtn.classList.add('selected');
+          row.classList.add('voted');
+          checkScoresReady();
+        });
+        btns.appendChild(skipBtn);
+      }
       row.appendChild(btns); list.appendChild(row);
     });
   }
   renderGroup('TITULARES',titulares);
-  renderGroup('SUPLENTES QUE INGRESARON',suplentes);
+  renderGroup('SUPLENTES QUE INGRESARON',suplentes,true);
+  renderGroup('DIRECTOR TÉCNICO',dt);
 }
 
 function checkScoresReady(){
@@ -1133,13 +1148,15 @@ async function downloadMyScores(){
     sub.textContent=`AAAJ vs ${RIVAL}`;
     tmp.appendChild(title); tmp.appendChild(sub);
 
+    const dtNums=new Set(playedSquad.filter(s=>s.tipo==='dt').map(s=>s.num));
     const suplNums=new Set(playedSquad.filter(s=>s.tipo==='suplente').map(s=>s.num));
-    const sorted=Object.entries(userScores).map(([num,val])=>{
+    const sorted=Object.entries(userScores).filter(([,v])=>v!==null).map(([num,val])=>{
       const p=playedSquad.find(s=>s.num===Number(num));
       return {num:Number(num),name:p?.name||`#${num}`,fid:p?.fid||0,val:Number(val)};
     }).sort((a,b)=>b.val-a.val);
-    const titSorted=sorted.filter(p=>!suplNums.has(p.num));
+    const titSorted=sorted.filter(p=>!suplNums.has(p.num)&&!dtNums.has(p.num));
     const suplSorted=sorted.filter(p=>suplNums.has(p.num));
+    const dtSorted=sorted.filter(p=>dtNums.has(p.num));
 
     if(titSorted[0])               addGrid(tmp,[titSorted[0]],1,0,52);
     if(titSorted.slice(1,3).length) addGrid(tmp,titSorted.slice(1,3),2,1,44);
@@ -1152,6 +1169,13 @@ async function downloadMyScores(){
       sep.textContent='SUPLENTES';
       tmp.appendChild(sep);
       addGrid(tmp,suplSorted,3,0,36,true);
+    }
+    if(dtSorted.length){
+      const sep=document.createElement('div');
+      sep.style.cssText='font-family:"Bebas Neue",sans-serif;font-size:13px;color:#555;letter-spacing:2px;text-align:center;margin:10px 0 6px;';
+      sep.textContent='DIRECTOR TÉCNICO';
+      tmp.appendChild(sep);
+      addGrid(tmp,dtSorted,1,0,44,true);
     }
 
     document.body.appendChild(tmp);
@@ -1170,10 +1194,11 @@ document.getElementById('scores-confirm-btn').addEventListener('click',async()=>
   if(localStorage.getItem(LS_SCORES_KEY)){ downloadMyScores(); return; }
   if(Object.keys(userScores).length!==playedSquad.length||!playedSquad.length)return;
   try{
+    const puntajesFiltered=Object.fromEntries(Object.entries(userScores).filter(([,v])=>v!==null));
     await fetch(`${SUPABASE_URL}/rest/v1/puntajes`,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
-      body:JSON.stringify({rival:RIVAL,puntajes:userScores})
+      body:JSON.stringify({rival:RIVAL,puntajes:puntajesFiltered})
     });
     try{localStorage.setItem(LS_SCORES_KEY,'1');}catch(e){}
     btn.textContent='⬇ Descargar puntajes';
@@ -1202,10 +1227,11 @@ async function showScoresResults(){
       return {num:Number(num),name:p?.name||`#${num}`,fid:p?.fid||0,avg:totals[num]/counts2[num]};
     }).sort((a,b)=>b.avg-a.avg);
     list.innerHTML='';
-    // Separar titulares y suplentes usando playedSquad
+    const dtNums=new Set(playedSquad.filter(s=>s.tipo==='dt').map(s=>s.num));
     const suplNums=new Set(playedSquad.filter(s=>s.tipo==='suplente').map(s=>s.num));
-    const titResults=results.filter(p=>!suplNums.has(p.num));
+    const titResults=results.filter(p=>!suplNums.has(p.num)&&!dtNums.has(p.num));
     const suplResults=results.filter(p=>suplNums.has(p.num));
+    const dtResults=results.filter(p=>dtNums.has(p.num));
 
     // Titulares: 1 / 2 / 4 / 4
     if(titResults[0])               addGrid(list,[titResults[0]],1,0,52);
@@ -1213,7 +1239,6 @@ async function showScoresResults(){
     if(titResults.slice(3,7).length) addGrid(list,titResults.slice(3,7),4,3,36);
     if(titResults.slice(7).length)   addGrid(list,titResults.slice(7),4,7,36);
 
-    // Suplentes
     if(suplResults.length){
       const sepLabel=document.createElement('div');
       sepLabel.className='scores-section-title';
@@ -1221,6 +1246,14 @@ async function showScoresResults(){
       sepLabel.textContent='SUPLENTES';
       list.appendChild(sepLabel);
       addGrid(list,suplResults,3,0,36,true);
+    }
+    if(dtResults.length){
+      const sepLabel=document.createElement('div');
+      sepLabel.className='scores-section-title';
+      sepLabel.style.marginTop='10px';
+      sepLabel.textContent='DIRECTOR TÉCNICO';
+      list.appendChild(sepLabel);
+      addGrid(list,dtResults,1,0,44,true);
     }
   }catch(e){list.innerHTML='<div style="color:#555">Error al cargar.</div>';}
 }
@@ -2514,7 +2547,7 @@ async function fetchPrevScores(fecha){
       row.appendChild(makeAvatar(FOTO(p.fid),p.num,36));
       const inf=document.createElement('div');inf.style.cssText='flex:1;';
       const nm=document.createElement('div');nm.style.cssText='font-size:13px;color:#fff;';nm.textContent=p.name;
-      const num=document.createElement('div');num.style.cssText='font-size:11px;color:#555;';num.textContent=`#${p.num}`;
+      const num=document.createElement('div');num.style.cssText='font-size:11px;color:#555;';num.textContent=p?.tipo==='dt'?'DT':`#${p.num}`;
       inf.appendChild(nm);inf.appendChild(num);row.appendChild(inf);
       const val=document.createElement('div');
       val.style.cssText='font-family:"Bebas Neue",sans-serif;font-size:22px;color:var(--rojo);min-width:40px;text-align:right;';
