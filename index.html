@@ -282,7 +282,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
     <div id="sim-fecha-nav-inline" style="display:none;align-items:center;justify-content:space-between;margin-bottom:8px;background:rgba(255,255,255,0.04);border-radius:8px;padding:6px 10px;">
       <button id="sim-prev-inline" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">‹</button>
       <div style="text-align:center;">
-        <div id="sim-fecha-inline-label" style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#fff;">FECHA 14</div>
+        <div id="sim-fecha-inline-label" style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#fff;">FECHA 15</div>
         <div id="sim-fecha-inline-sub" style="font-size:10px;color:#666;"></div>
       </div>
       <button id="sim-next-inline" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">›</button>
@@ -360,12 +360,12 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   </div>
   <div id="header">
     <h1>⚽ Armá tu formación</h1>
-    <div class="rival-tag">AAAJ vs Ind. Rivadavia</div>
+    <div class="rival-tag">AAAJ vs Atl. Tucumán</div>
     <p>Arrastrá jugadores del banco a la cancha · Soltá en el banco para quitar</p>
   </div>
   <div id="rival-toggle-bar">
     <button class="rival-toggle-btn" id="rival-btn" onclick="toggleRival()">
-      <span class="toggle-dot"></span>VER RIVAL (IND. RIVADAVIA)
+      <span class="toggle-dot"></span>VER RIVAL (ATL. TUCUMÁN)
     </button>
   </div>
   <div id="pitch-row">
@@ -421,7 +421,7 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
   <button class="back-btn" onclick="goHome()">← Volver</button>
   <div class="scores-header">
     <h1>⭐ Puntuá el partido</h1>
-    <div class="rival-tag">AAAJ vs Ind. Rivadavia</div>
+    <div class="rival-tag">AAAJ vs Atl. Tucumán</div>
     <p>Poné tu nota del 1 al 10 a cada jugador</p>
   </div>
   <div id="scores-list"></div>
@@ -456,39 +456,46 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 // ============================================================
 // FECHA ACTUAL (actualizar cada fecha):
-const RIVAL = 'Independiente Rivadavia';
-const LS_KEY = 'aaaj_vs_ind_rivadavia';
-const LS_FORMATION_KEY = 'aaaj_vs_ind_rivadavia_formacion';
-const LS_SCORES_KEY = 'aaaj_vs_ind_rivadavia_puntajes';
-const SCORES_ENABLED = true;
+const RIVAL = 'Atlético Tucumán';
+const LS_KEY = 'aaaj_vs_atletico_tucuman';
+const LS_FORMATION_KEY = 'aaaj_vs_atletico_tucuman_formacion';
+const LS_SCORES_KEY = 'aaaj_vs_atletico_tucuman_puntajes';
+const SCORES_ENABLED = false;
 
-const playedSquad = [
-  {num:25, name:'Cortés',     fid:424153,  tipo:'titular'},
-  {num:14, name:'Coronel',    fid:1575797, tipo:'titular'},
-  {num:4,  name:'Godoy',      fid:316878,  tipo:'titular'},
-  {num:6,  name:'Riquelme',   fid:1277345, tipo:'titular'},
-  {num:20, name:'Prieto',     fid:841913,  tipo:'titular'},
-  {num:24, name:'Fattori',    fid:616508,  tipo:'titular'},
-  {num:11, name:'Oroz',       fid:543304,  tipo:'titular'},
-  {num:23, name:'López',      fid:1037535, tipo:'titular'},
-  {num:10, name:'Lescano',    fid:1342579, tipo:'titular'},
-  {num:29, name:'Viveros',    fid:1304246, tipo:'titular'},
-  {num:30, name:'Morales',    fid:785840,  tipo:'titular'},
-  {num:48, name:'Jainikoski', fid:1843096, tipo:'suplente'},
-  {num:8,  name:'Gómez',      fid:1609797, tipo:'suplente'},
-  {num:47, name:'Porcel',     fid:1648046, tipo:'suplente'},
-  {num:31, name:'Carrizo',    fid:1842716, tipo:'suplente'},
-  {num:18, name:'Fernández',  fid:306126,  tipo:'suplente'},
-];
+const playedSquad = [];
 // ============================================================
 
 // ===== HISTORIAL DE FECHAS =====
 const FECHAS = [
   {
+    num: 15,
+    rival: 'Atlético Tucumán',
+    escudoFile: 'atleticotucuman',
+    isCurrent: true
+  },
+  {
     num: 14,
     rival: 'Independiente Rivadavia',
     escudoFile: 'independienterivadavia',
-    isCurrent: true
+    isCurrent: false,
+    playedSquad: [
+      {num:25, name:'Cortés',     fid:424153,  tipo:'titular'},
+      {num:14, name:'Coronel',    fid:1575797, tipo:'titular'},
+      {num:4,  name:'Godoy',      fid:316878,  tipo:'titular'},
+      {num:6,  name:'Riquelme',   fid:1277345, tipo:'titular'},
+      {num:20, name:'Prieto',     fid:841913,  tipo:'titular'},
+      {num:24, name:'Fattori',    fid:616508,  tipo:'titular'},
+      {num:11, name:'Oroz',       fid:543304,  tipo:'titular'},
+      {num:23, name:'López',      fid:1037535, tipo:'titular'},
+      {num:10, name:'Lescano',    fid:1342579, tipo:'titular'},
+      {num:29, name:'Viveros',    fid:1304246, tipo:'titular'},
+      {num:30, name:'Morales',    fid:785840,  tipo:'titular'},
+      {num:48, name:'Jainikoski', fid:1843096, tipo:'suplente'},
+      {num:8,  name:'Gómez',      fid:1609797, tipo:'suplente'},
+      {num:47, name:'Porcel',     fid:1648046, tipo:'suplente'},
+      {num:31, name:'Carrizo',    fid:1842716, tipo:'suplente'},
+      {num:18, name:'Fernández',  fid:306126,  tipo:'suplente'},
+    ]
   },
   {
     num: 13,
@@ -516,7 +523,7 @@ const FECHAS = [
 ];
 
 const FOTO = id => `/fotos/${id}.png`;
-const FOTO_B = id => `/fotosIndependienteRivadavia/${id}.png`;
+const FOTO_B = id => `/fotosAtleticoTucuman/${id}.png`;
 
 const squad = [
   {num:1,  name:'Mangiaut',    fid:1680187},
@@ -557,19 +564,19 @@ const squad = [
   {num:50, name:'Rodríguez',   fid:186986},
 ].sort((a,b)=>a.num-b.num);
 
-// Rival squad — Independiente Rivadavia F14
+// Rival squad — Atlético Tucumán F15
 const banfieldSquad = [
-  {num:1,  name:'Bolcato',   fid:1844779, x:49.8, y:5.8},
-  {num:36, name:'Bonifacio', fid:566259,  x:13.2, y:35.3},
-  {num:43, name:'Ríos',      fid:1314171, x:18.4, y:66.8},
-  {num:2,  name:'Costa',     fid:1344767, x:50.3, y:18.9},
-  {num:40, name:'Villalba',  fid:805771,  x:29.6, y:22.3},
-  {num:42, name:'Studer',    fid:1559675, x:71.6, y:22},
-  {num:25, name:'Florentín', fid:1129078, x:49.8, y:41.9},
-  {num:10, name:'Fernández', fid:1273505, x:49.8, y:63.8},
-  {num:14, name:'Gómez',     fid:725483,  x:86,   y:35.2},
-  {num:9,  name:'Arce',      fid:1320444, x:50,   y:81},
-  {num:22, name:'Villa',     fid:859319,  x:82.4, y:67.2},
+  {num:1,  name:'Ingolotti',  fid:844389,  x:50,   y:5.8},
+  {num:3,  name:'Villa',      fid:892697,  x:15,   y:22},
+  {num:21, name:'Galván',     fid:1230316, x:37,   y:22},
+  {num:26, name:'Ferreira',   fid:1640274, x:63,   y:22},
+  {num:23, name:'Laméndola',  fid:1135464, x:85,   y:22},
+  {num:8,  name:'Ham',        fid:529351,  x:20,   y:50},
+  {num:20, name:'Suso',       fid:529109,  x:50,   y:45},
+  {num:10, name:'Nicola',     fid:1374130, x:80,   y:50},
+  {num:45, name:'Ortiz',      fid:1336567, x:30,   y:68},
+  {num:11, name:'Tesuri',     fid:793800,  x:70,   y:68},
+  {num:9,  name:'Díaz',       fid:198056,  x:50,   y:82},
 ];
 
 const GOALKEEPERS = [1,12,32,50];
