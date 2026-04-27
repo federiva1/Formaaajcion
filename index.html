@@ -131,11 +131,11 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
 
 .player-on-pitch { position: absolute; display: flex; flex-direction: column; align-items: center; cursor: grab; transform: translate(-50%, -50%); z-index: 10; touch-action: none; }
 .player-bubble { width: var(--ps, 44px); height: var(--ps, 44px); border-radius: 50%; border: 2.5px solid #fff; overflow: hidden; position: relative; box-shadow: 0 2px 6px rgba(0,0,0,0.5); background: var(--rojo); display: flex; align-items: center; justify-content: center; }
-.player-bubble.banfield { background: var(--azul-rival); }
+.player-bubble.banfield { background: #fff; }
 .player-bubble img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: none; }
 .player-bubble .fallback-num { font-family: 'Bebas Neue', sans-serif; font-size: var(--pfs, 16px); color: #fff; }
 .player-numtag { font-size: var(--ntfs, 10px); color: #fff; font-weight: 500; background: var(--rojo); border: 1.5px solid #fff; border-radius: 8px; padding: 1px 5px; margin-top: 2px; line-height: 1.3; white-space: nowrap; }
-.player-numtag.banfield { background: var(--azul-rival); }
+.player-numtag.banfield { background: #fff; color: var(--rojo); border-color: var(--rojo); }
 .player-on-pitch .xbtn { position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--rojo-dark); border: none; color: #fff; font-size: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; }
 .player-on-pitch:hover .xbtn { display: flex; }
 .player-on-pitch.rival-player { opacity: 0.85; z-index: 9; }
@@ -369,7 +369,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
     <button class="rival-toggle-btn" id="rival-btn" onclick="toggleRival()">
       <span class="toggle-dot"></span>VER RIVAL (HURACÁN)
     </button>
-    <button class="rival-toggle-btn" onclick="showRivalPositions()" title="Ver posiciones del rival" style="padding:5px 12px;">📋 POS</button>
   </div>
   <div id="pitch-row">
     <div id="pitch">
@@ -593,18 +592,18 @@ const squad = [
   {num:50, name:'Rodríguez',   fid:186986},
 ].sort((a,b)=>a.num-b.num);
 
-// Rival squad — Huracán F16 (ajustar posiciones x/y con botón POS)
+// Rival squad — Huracán F16
 const banfieldSquad = [
   {num:1,  name:'Galíndez', fid:146801,  x:50,   y:5.8},
-  {num:25, name:'Ibáñez',   fid:1092826, x:13.5, y:26.2},
+  {num:25, name:'Ibáñez',   fid:1092826, x:85.7, y:30.7},
   {num:6,  name:'Pereyra',  fid:889736,  x:36.1, y:22.2},
   {num:35, name:'Palazzo',  fid:1695062, x:61,   y:22},
-  {num:2,  name:'Blondel',  fid:823206,  x:86,   y:25.8},
-  {num:20, name:'Ojeda',    fid:800716,  x:38.1, y:42.4},
-  {num:15, name:'Waller',   fid:725073,  x:63.3, y:41.4},
-  {num:8,  name:'Gil',      fid:469590,  x:50.9, y:54},
-  {num:7,  name:'Cortés',   fid:1433070, x:17.7, y:60.9},
-  {num:10, name:'Romero',   fid:274528,  x:83,   y:60.2},
+  {num:2,  name:'Blondel',  fid:823206,  x:14.7, y:30},
+  {num:20, name:'Ojeda',    fid:800716,  x:35.5, y:42},
+  {num:15, name:'Waller',   fid:725073,  x:62.6, y:41},
+  {num:8,  name:'Gil',      fid:469590,  x:17.8, y:64.1},
+  {num:7,  name:'Cortés',   fid:1433070, x:82.8, y:62.5},
+  {num:10, name:'Romero',   fid:274528,  x:50.5, y:63.1},
   {num:9,  name:'Caicedo',  fid:766159,  x:50,   y:82},
 ];
 
