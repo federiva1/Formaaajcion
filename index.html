@@ -369,7 +369,6 @@ html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(-
     <button class="rival-toggle-btn" id="rival-btn" onclick="toggleRival()">
       <span class="toggle-dot"></span>VER RIVAL (GIMNASIA LP)
     </button>
-    <button class="rival-toggle-btn" onclick="showRivalPositions()" title="Ver posiciones del rival" style="padding:5px 12px;">📋 POS</button>
   </div>
   <div id="pitch-row">
     <div id="pitch">
@@ -617,19 +616,19 @@ const squad = [
   {num:50, name:'Rodríguez',   fid:186986},
 ].sort((a,b)=>a.num-b.num);
 
-// Rival squad — Gimnasia LP F17 (4-4-2 inicial; ajustar con botón 📋 POS)
+// Rival squad — Gimnasia LP F17
 const banfieldSquad = [
-  {num:19, name:'Insfrán',          fid:955209,  x:50,   y:8},
-  {num:21, name:'E. Martínez',      fid:951841,  x:14.7, y:28},
-  {num:13, name:'Conti',            fid:438183,  x:36.1, y:24},
-  {num:8,  name:'Steimbach',        fid:1393173, x:61,   y:24},
-  {num:24, name:'Silva Torrejón',   fid:723677,  x:85.7, y:28},
-  {num:33, name:'I. Fernández',     fid:229816,  x:14.7, y:50},
-  {num:5,  name:'Miramón',          fid:1206830, x:36.1, y:48},
-  {num:16, name:'Max',              fid:793799,  x:61,   y:48},
-  {num:10, name:'N. Barros Schelotto', fid:1521000, x:85.7, y:50},
-  {num:29, name:'Auzmendi',         fid:856200,  x:36,   y:75},
-  {num:32, name:'M. Torres',        fid:847979,  x:64,   y:75},
+  {num:19, name:'Insfrán',             fid:955209,  x:50,   y:8},
+  {num:21, name:'E. Martínez',         fid:951841,  x:62.8, y:24},
+  {num:13, name:'Conti',               fid:438183,  x:36.1, y:24},
+  {num:8,  name:'Steimbach',           fid:1393173, x:14.9, y:30.1},
+  {num:24, name:'Silva Torrejón',      fid:723677,  x:85.5, y:28.4},
+  {num:33, name:'I. Fernández',        fid:229816,  x:49.4, y:65.9},
+  {num:5,  name:'Miramón',             fid:1206830, x:23.5, y:51.4},
+  {num:16, name:'Max',                 fid:793799,  x:49.3, y:41.1},
+  {num:10, name:'N. Barros Schelotto', fid:1521000, x:74.4, y:53.6},
+  {num:29, name:'Auzmendi',            fid:856200,  x:30,   y:78.6},
+  {num:32, name:'M. Torres',           fid:847979,  x:66.4, y:79},
 ];
 
 const GOALKEEPERS = [12,32];
